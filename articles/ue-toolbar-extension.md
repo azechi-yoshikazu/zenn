@@ -8,6 +8,9 @@ published: false
 
 ## はじめに
 
+C++での内容となります。
+Blueprint でも可能ですが実用性のある記事と出来そうになかったため断念……
+
 ### 何をするのか
 
 エディタ下部にあるステータスバーの右側
@@ -104,19 +107,26 @@ void FToolBarExtensionModule::StartupModule()
     auto Widget = ...; // 省略
 
     // 追加するツールバーの取得
-	UToolMenu* Menu = UToolMenus::Get()->ExtendMenu(TEXT("LevelEditor.StatusBar.ToolBar"));
+    UToolMenu* Menu = UToolMenus::Get()->ExtendMenu(TEXT("LevelEditor.StatusBar.ToolBar"));
     // 取得したツールバーに対してセクションを追加
-	FToolMenuSection& MyToolSection = Menu->AddSection(TEXT("MyTool"), FText::GetEmpty(), FToolMenuInsert(NAME_None, EToolMenuInsertType::First));
+    FToolMenuSection& MyToolSection = Menu->AddSection(TEXT("MyTool"), FText::GetEmpty(), FToolMenuInsert(NAME_None, EToolMenuInsertType::First));
 
     // 追加したセクションの項目として、作成しておいた Widget を登録
-	MyToolSection.AddEntry(
-		FToolMenuEntry::InitWidget(TEXT("MyToolBar"), Widget, FText::GetEmpty(), true, false)
-	);
+    MyToolSection.AddEntry(
+        FToolMenuEntry::InitWidget(TEXT("MyToolBar"), Widget, FText::GetEmpty(), true, false)
+    );
 }
 ```
 
-### 最終結果
-
-できた！！！
+### 4. 最終結果
 
 ![](/images/ue-toolbar-extension/editor-after.png)
+
+## まとめ
+
+思っているよりも簡単にツールバーへの追加は出来ました。
+
+今回使用している UToolMenu は Blueprint にも公開されているため、ちゃんと調べれば Editor Utility Object などから追加することも可能だと思います。
+
+Slate をベースとしているため少しとっつきにくいところはあるかもしれませんが、
+バージョン管理のハッシュ値を出しておくだけでもチーム開発では便利だったりするので是非試してみてください。

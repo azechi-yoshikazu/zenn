@@ -3,7 +3,7 @@ title: "[UE5]エディタ右下のツールバーに独自アイテムを追加�
 emoji: "👻"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["UnrealEngine", "cpp"]
-published: false
+published: true
 ---
 
 ## はじめに
@@ -155,8 +155,11 @@ void FToolBarExtensionModule::StartupModule()
 _望んでいた配置になった_
 
 うまくいきました！
-ただし、今回のやり方はたまたま上手くいっただけに近いです。
+
+:::message
+この配置調整方法はたまたま上手くいっただけに近いです。
 今後のエンジン更新などで処理順が変わってしまう可能性があるため、モジュールの`LoadingPhase`の変更などが必要かなと思います。
+:::
 
 ## まとめ
 

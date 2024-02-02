@@ -16,6 +16,7 @@ Blueprint でも可能ですが実用性のある記事と出来そうになか�
 エディタ下部にあるステータスバーの右側
 ここにあるツールバーに対して独自のアイテムを追加したい
 ![](/images/ue-toolbar-extension/editor-before.png)
+_矢印の先に出したい_
 
 ### 環境
 
@@ -35,6 +36,7 @@ Blueprint でも可能ですが実用性のある記事と出来そうになか�
 今回は`ToolBarExtension`という名前にしました。
 
 ![](/images/ue-toolbar-extension/new-plugin.png)
+_新規プラグイン作成ウィンドウ_
 
 #### 1-2. プラグインのモジュール設定を変更
 
@@ -104,23 +106,57 @@ PrivateDependencyModuleNames.AddRange(
 
 void FToolBarExtensionModule::StartupModule()
 {
-    auto Widget = ...; // 省略
-
     // 追加するツールバーの取得
-    UToolMenu* Menu = UToolMenus::Get()->ExtendMenu(TEXT("LevelEditor.StatusBar.ToolBar"));
-    // 取得したツールバーに対してセクションを追加
-    FToolMenuSection& MyToolSection = Menu->AddSection(TEXT("MyTool"), FText::GetEmpty(), FToolMenuInsert(NAME_None, EToolMenuInsertType::First));
+    if(UToolMenu* Menu = UToolMenus::Get()->ExtendMenu(TEXT("LevelEditor.StatusBar.ToolBar")))
+    {
+        auto Widget = ...; // 追加できそうなタイミングのみ生成したいので移動
 
-    // 追加したセクションの項目として、作成しておいた Widget を登録
-    MyToolSection.AddEntry(
-        FToolMenuEntry::InitWidget(TEXT("MyToolBar"), Widget, FText::GetEmpty(), true, false)
-    );
+        // 取得したツールバーに対してセクションを追加
+        FToolMenuSection& MyToolSection = Menu->AddSection(TEXT("MyTool"), FText::GetEmpty(), FToolMenuInsert(NAME_None, EToolMenuInsertType::First));
+
+        // 追加したセクションの項目として、作成しておいた Widget を登録
+        MyToolSection.AddEntry(
+            FToolMenuEntry::InitWidget(TEXT("MyToolBar"), Widget, FText::GetEmpty(), true, false)
+        );
+    }
 }
 ```
 
-### 4. 最終結果
+これでボタンが出ました！
 
 ![](/images/ue-toolbar-extension/editor-after.png)
+_出た！……けど Trace の右側……？_
+
+#### 3-3. 一番左に出したい……
+
+なんとなく、拡張したセクションは左にすべてまとまっていてほしいです。
+`UToolMenu::AddSection()`に渡している`FToolMenuInsert`は、追加済みのセクションを基準とした挿入が行えるようなので試してみます。
+今回追加しようとしているタイミングよりも早く追加されているセクションがある場合、そのセクションを指定します。
+追加済みセクションよりも前（左側）に出てくれることを期待して、`EToolMenuInsertType::Before`を指定してみます。
+
+```cpp:ToolBarExtension.cpp
+void FToolBarExtensionModule::StartupModule()
+{
+    // 追加するツールバーの取得
+    if(UToolMenu* Menu = UToolMenus::Get()->ExtendMenu(TEXT("LevelEditor.StatusBar.ToolBar")))
+    {
+        ...
+
+        // 取得したツールバーに対してセクションを追加
+        const FToolMenuInsert Position(Menu->Sections.Num() > 0 ? Menu->Sections[0].Name : NAME_None, EToolMenuInsertType::Before);// <-- 追加
+        FToolMenuSection& MyToolSection = Menu->AddSection(TEXT("MyTool"), FText::GetEmpty(), Position);
+
+        ...
+    }
+}
+```
+
+![](/images/ue-toolbar-extension/editor-final.png)
+_望んでいた配置になった_
+
+うまくいきました！
+ただし、今回のやり方はたまたま上手くいっただけに近いです。
+今後のエンジン更新などで処理順が変わってしまう可能性があるため、モジュールの`LoadingPhase`の変更などが必要かなと思います。
 
 ## まとめ
 
